@@ -1,3 +1,5 @@
+
+
 from django.core.cache import cache
 
 from lib.sms import send_sms
@@ -5,6 +7,8 @@ from lib.http import render_json
 from common import keys
 from common import errors
 from user.models import User
+from user.forms import ProfileForm
+from user.logics import handle_upload_avatar
 # Create your views here.
 
 
@@ -12,8 +16,8 @@ def submit_phone(request):
     """先提交手机号码"""
     phonenum = request.POST.get('phone')
     # 拿到手机号码应该去发短信.
-    send_sms(phonenum)
-    return render_json(data=None)
+    send_sms.delay(phonenum)
+    return render_json(None)
 
 
 def submit_vcode(request):
@@ -52,9 +56,27 @@ def get_profile(request):
 
 def edit_profile(request):
     """修改个人资料"""
-    return
+    form = ProfileForm(request.POST)
+    # user = User.objects.get(id=request.session['uid'])
+    if form.is_valid():
+        profile = form.save(commit=False)
+        profile.id = request.session['uid']
+        profile.save()
+        return render_json(profile.to_dict())
+    else:
+        return render_json(form.errors, errors.PROFILE_ERR)
 
 
 def upload_avatar(request):
     """头像上传"""
-    return
+    avatar = request.FILES.get('avatar')
+    # print(type(avatar))
+    # print(avatar.name)
+    uid = request.session['uid']
+    user = User.objects.get(id=uid)
+
+    handle_upload_avatar.delay(user, avatar)
+
+    return render_json(user.avatar)
+
+#  想办法把耗时操作变成异步非阻塞的操作.
