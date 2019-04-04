@@ -5,6 +5,7 @@ from django.db import models
 from lib.orm import ModelMixin
 
 # Create your models here.
+from social.models import Friend
 
 
 class User(models.Model):
@@ -38,8 +39,16 @@ class User(models.Model):
             self._profile, _ = Profile.objects.get_or_create(id=self.id)
         return self._profile
 
+    @property
+    def friends(self):
+        """返回用户的好友"""
+        friends_list = Friend.get_friends_list(self)
+        users = User.objects.filter(id__in=friends_list)
+        return users
+
     def to_dict(self):
         return {
+            "id": self.id,
             "phonenum": self.phonenum,
             "nickname": self.nickname,
             "sex": self.sex,
