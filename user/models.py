@@ -6,6 +6,7 @@ from lib.orm import ModelMixin
 
 # Create your models here.
 from social.models import Friend
+from vip.models import Vip
 
 
 class User(models.Model):
@@ -23,6 +24,8 @@ class User(models.Model):
     avatar = models.CharField(max_length=256, verbose_name='个人形象')
     location = models.CharField(max_length=8, verbose_name='常居地')
 
+    # 和vip的关系
+    vip_id = models.IntegerField(default=0, verbose_name='用户的会员id')
 
     class Meta:
         db_table = 'users'
@@ -38,6 +41,13 @@ class User(models.Model):
         if not hasattr(self, '_profile'):
             self._profile, _ = Profile.objects.get_or_create(id=self.id)
         return self._profile
+
+    @property
+    def vip(self):
+        """获取用户的vip"""
+        if not hasattr(self, '_vip'):
+            self._vip = Vip.objects.get(id=self.vip_id)
+        return self._vip
 
     @property
     def friends(self):

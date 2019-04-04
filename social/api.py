@@ -11,6 +11,7 @@ from social.logics import return_rcmd_list
 from social import logics
 from swiper import config
 from user.models import User
+from vip.logics import need_perm
 
 
 def get_rcmd_list(request):
@@ -31,6 +32,7 @@ def like(request):
     return render_json({'matched': result})
 
 
+@need_perm('superlike')
 def superlike(request):
     "超级喜欢"
     sid = request.POST.get('sid')
@@ -48,6 +50,7 @@ def dislike(request):
     return render_json(None)
 
 
+@need_perm('rewind')
 def rewind(request):
     "反悔 (每天允许反悔 3 次)"
     user = request.user
@@ -56,6 +59,7 @@ def rewind(request):
     return render_json({'rewinded': result})
 
 
+@need_perm('show_liked_me')
 def get_liked_list(request):
     """查看喜欢过我的人"""
     user = request.user
