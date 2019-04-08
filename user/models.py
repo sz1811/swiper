@@ -2,7 +2,6 @@ import datetime
 
 from django.db import models
 
-from lib.orm import ModelMixin
 
 # Create your models here.
 from social.models import Friend
@@ -68,7 +67,7 @@ class User(models.Model):
         }
 
 
-class Profile(models.Model, ModelMixin):
+class Profile(models.Model):
     """个人资料"""
     SEX = (
         ('male', '男'),

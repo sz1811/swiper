@@ -12,6 +12,7 @@ from social import logics
 from swiper import config
 from user.models import User
 from vip.logics import need_perm
+from lib.cache import rds
 
 
 def get_rcmd_list(request):
@@ -29,6 +30,7 @@ def like(request):
     # 去创建一条数据
     user = request.user
     result = logics.like(user, sid)
+    rds.zincrby(keys.HOT_RANK, config.SCORE_LIKE, sid)
     return render_json({'matched': result})
 
 
@@ -39,6 +41,10 @@ def superlike(request):
     # 去创建一条数据
     user = request.user
     result = logics.superlike(user, sid)
+
+    # 添加得分 +7分
+    # 尽量避免硬编码, 把东西边的可配置,已维护
+    rds.zincrby(keys.HOT_RANK, config.SCORE_SUPERLIKE, sid)
     return render_json({'matched': result})
 
 
@@ -47,6 +53,7 @@ def dislike(request):
     sid = int(request.POST.get('sid'))
     user = request.user
     Swiped.objects.create(uid=user.id, sid=sid, mark='dislike')
+    rds.zincrby(keys.HOT_RANK, config.SCORE_DISLIKE, sid)
     return render_json(None)
 
 
@@ -73,3 +80,15 @@ def friends(request):
     """获取用户好友信息"""
     data = [user.to_dict() for user in request.user.friends]
     return render_json(data=data)
+
+
+def hot_users(request):
+    """获取前10 的热门用户
+    {1: {id:2, nickname:zhangsan, ... score=500},
+    2: {id:6, nickname:zhangsan, ... score=500},
+    3: {id:9, nickname:zhangsan, ... score=500},
+    4: {id:100, nickname:zhangsan, ... score=500}
+    }
+    """
+    top_dict = logics.get_top_n(config.TOP_N)
+    return render_json(top_dict)

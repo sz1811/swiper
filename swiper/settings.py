@@ -84,6 +84,20 @@ DATABASES = {
 }
 
 
+# redis的主从配置
+REDIS = {
+    'Master': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 2
+    },
+    'Slave': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 2
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -136,3 +150,6 @@ CACHES = {
         }
     }
 }
+
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

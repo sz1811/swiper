@@ -1,4 +1,4 @@
-""" 存放第三方的配置"""
+""" 存放第三方的配置和业务配置"""
 
 # 云之讯
 YZX_SMS_API = 'https://open.ucpaas.com/ol/sms/sendsms'
@@ -22,3 +22,13 @@ QN_CLOUD_URL = 'http://ppbbw26nl.bkt.clouddn.com'
 
 # 反悔次数配置
 REWIND_TIMES = 3
+
+# 喜欢的分数
+SCORE_LIKE = 5
+# 超级喜欢
+SCORE_SUPERLIKE = 7
+# 不喜欢
+SCORE_DISLIKE = -5
+
+# TOP_N
+TOP_N = 10

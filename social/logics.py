@@ -2,6 +2,7 @@ import datetime
 
 from django.core.cache import cache
 
+from lib.cache import rds
 from social.models import Swiped, Friend
 from user.models import User
 from common import keys
@@ -73,7 +74,56 @@ def rewind(user):
         relation = Friend.objects.filter(uid1=uid1, uid2=uid2)
         # print(relation)
         relation.delete()
+
+
+        # 处理热度得分
+        # if record.mark == 'like':
+        #     rds.zincrby(keys.HOT_RANK, -config.SCORE_LIKE, record.sid)
+        # elif record.mark == 'superlike':
+        #     rds.zincrby(keys.HOT_RANK, -config.SCORE_SUPERLIKE, record.sid)
+        # else:
+        #     rds.zincrby(keys.HOT_RANK, -config.SCORE_DISLIKE
+        #                 , record.sid)
+        # 利用字典做模式匹配.
+        score_mapping = {
+            'like': config.SCORE_LIKE,
+            'superlike': config.SCORE_SUPERLIKE,
+            'dislike': config.SCORE_DISLIKE
+        }
+        rds.zincrby(keys.HOT_RANK, -score_mapping[record.mark], record.sid)
+
         record.delete()
         return True
     else:
         raise  errors.RewindLimit('已超过最大反悔次数')  # 实际应该返回一个状态码.
+
+
+def get_top_n(num):
+    # 从redis缓存中拿数据
+    # [[b'184', 7.0], [b'183', 7.0], [b'15', 7.0], [b'188', 5.0], [b'128', 5.0]]
+    origin_data = rds.zrevrange('HOT_RANK', 0, num - 1, withscores=True)
+    # 对redis中的数据进行简单清洗
+    # [(184, 7), (183, 7), (15, 7), (188, 5), (128, 5)]
+    cleaned_data = [(int(id), int(score)) for id, score in origin_data]
+    # 以下代码性能低下.for每次循环都会访问数据库.
+    # users = []
+    # for uid,_ in cleaned_data:
+    #     users.append(User.objects.get(id=uid))
+    # [184, 183, 15, 188, 128]
+    uid_list = [uid for uid, _ in cleaned_data]
+    # queryset 默认是按照id的升序进行排列.
+    users = User.objects.filter(id__in=uid_list)
+    users = sorted(users, key=lambda user: uid_list.index(user.id))
+
+    top_dict = {}
+    for rank, (_, score), user in zip(range(1, num+1), cleaned_data, users):
+        user_attr = user.to_dict()
+        user_attr['score'] = score
+        top_dict[rank] = user_attr
+    return top_dict
+
+
+
+
+
+

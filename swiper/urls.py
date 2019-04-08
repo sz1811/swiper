@@ -33,4 +33,6 @@ urlpatterns = [
 
     url(r'^api/social/friends/$', social_api.friends),
 
+    url(r'^api/social/hot/users/$', social_api.hot_users),
+
 ]
