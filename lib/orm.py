@@ -39,11 +39,11 @@ def get_or_create(cls, *args, **kwargs):
         key = '%s-%s' % (cls.__name__, pk)
         model_obj = cache.get(key)
         if model_obj is None:
-            model_obj = cls.get_or_create(*args, **kwargs)
+            model_obj = cls.objects.get_or_create(*args, **kwargs)
             cache.set(key, model_obj, 86400 * 14)
         return model_obj
 
-    model_obj = cls.get_or_create(*args, **kwargs)
+    model_obj = cls.objects.get_or_create(*args, **kwargs)
     return model_obj
 
 

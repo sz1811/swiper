@@ -108,7 +108,7 @@ def get_top_n(num):
     # 以下代码性能低下.for每次循环都会访问数据库.
     # users = []
     # for uid,_ in cleaned_data:
-    #     users.append(User.objects.get(id=uid))
+    #     users.append(User.get(id=uid))
     # [184, 183, 15, 188, 128]
     uid_list = [uid for uid, _ in cleaned_data]
     # queryset 默认是按照id的升序进行排列.

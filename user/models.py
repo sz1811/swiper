@@ -38,14 +38,14 @@ class User(models.Model):
     @property
     def profile(self):
         if not hasattr(self, '_profile'):
-            self._profile, _ = Profile.objects.get_or_create(id=self.id)
+            self._profile, _ = Profile.get_or_create(id=self.id)
         return self._profile
 
     @property
     def vip(self):
         """获取用户的vip"""
         if not hasattr(self, '_vip'):
-            self._vip = Vip.objects.get(id=self.vip_id)
+            self._vip = Vip.get(id=self.vip_id)
         return self._vip
 
     @property

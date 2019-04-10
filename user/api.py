@@ -1,4 +1,4 @@
-
+import logging
 
 from django.core.cache import cache
 
@@ -9,7 +9,9 @@ from common import errors
 from user.models import User
 from user.forms import ProfileForm
 from user.logics import handle_upload_avatar
+
 # Create your views here.
+logger = logging.getLogger('inf')
 
 
 def submit_phone(request):
@@ -42,6 +44,8 @@ def submit_vcode(request):
         user, created = User.get_or_create(phonenum=phonenum, nickname=phonenum)
         # 登录
         request.session['uid'] = user.id
+        # 用户登录成功,记录日志.
+        logger.info(f'User {user.id}, login')
         return render_json(data=user.to_dict())
     else:
         raise errors.VcodeErr('验证码错误')
@@ -75,6 +79,8 @@ def edit_profile(request):
 
         # 更新缓存
         cache.set(keys.PROFILE_DICT % profile.id, profile.to_dict(), 86400 * 7)
+        # 记录日志
+        logger.info(f'User {profile.id} has changed profile')
         return render_json(profile.to_dict())
     else:
         raise errors.ProfileErr(data=form.errors)
